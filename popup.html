@@ -16,11 +16,7 @@
       font-weight: 500 600 700;
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
       --surface: #131313;
@@ -45,7 +41,7 @@
 
     body {
       width: 400px;
-      min-height: 560px;
+      min-height: 540px;
       background: var(--background);
       color: var(--on-surface);
       font-family: 'Inter', -apple-system, sans-serif;
@@ -55,556 +51,392 @@
 
     body::before {
       content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background-image:
-        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
       background-size: 20px 20px;
-      pointer-events: none;
-      z-index: 0;
+      pointer-events: none; z-index: 0;
     }
 
-    .extension-container {
-      position: relative;
-      z-index: 1;
-      min-height: 560px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* ── Header ───────────────────────────────────────────────── */
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 20px;
-      background: rgba(19, 19, 19, 0.85);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .logo { width: 32px; height: 32px; position: relative; }
-
-    .brand-name {
-      font-family: 'Geist', 'Inter', sans-serif;
-      font-size: 20px;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      color: var(--on-surface);
-    }
-
-    .status-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 12px;
-      background: rgba(17, 255, 160, 0.1);
-      border: 1px solid rgba(17, 255, 160, 0.3);
-      border-radius: 9999px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--secondary);
-      transition: all 0.3s ease;
-    }
-
-    .status-badge.active {
-      background: rgba(0, 191, 255, 0.12);
-      border-color: rgba(0, 191, 255, 0.4);
-      color: var(--primary);
-    }
-
-    .status-badge.error {
-      background: rgba(255, 180, 171, 0.12);
-      border-color: rgba(255, 180, 171, 0.4);
-      color: var(--error);
-    }
-
-    .status-dot {
-      width: 6px;
-      height: 6px;
-      background: currentColor;
-      border-radius: 50%;
-      position: relative;
-    }
-
-    .status-dot.active::after {
-      content: '';
-      position: absolute;
-      top: -3px; left: -3px;
-      width: 12px; height: 12px;
-      border-radius: 50%;
-      background: currentColor;
-      opacity: 0;
-      animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
-    }
-
-    @keyframes ping {
-      75%, 100% { transform: scale(2); opacity: 0; }
-    }
-
-    /* ── Main Content ─────────────────────────────────────────── */
-    .main-content {
-      flex: 1;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
+    .ext { position: relative; z-index: 1; min-height: 540px; display: flex; flex-direction: column; }
     .hidden { display: none !important; }
 
-    /* ── Input Section ────────────────────────────────────────── */
-    .input-container {
-      position: relative;
-      background: rgba(0, 0, 0, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 12px;
-      padding: 16px;
+    /* ── Header ─────────────────────────────────────── */
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px;
+      background: rgba(19,19,19,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    .logo-svg { width: 28px; height: 28px; }
+    .brand { font-family: 'Geist','Inter',sans-serif; font-size: 18px; font-weight: 600; letter-spacing: -0.02em; }
+
+    .badge {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
       transition: all 0.3s ease;
     }
+    .badge.ready  { background: rgba(17,255,160,0.1); border: 1px solid rgba(17,255,160,0.3); color: var(--secondary); }
+    .badge.active { background: rgba(0,191,255,0.12); border: 1px solid rgba(0,191,255,0.4); color: var(--primary); }
+    .badge.off    { background: rgba(255,180,171,0.12); border: 1px solid rgba(255,180,171,0.4); color: var(--error); }
 
-    .input-container:focus-within {
-      border-color: rgba(0, 191, 255, 0.5);
-      box-shadow: 0 0 15px rgba(0, 191, 255, 0.1);
+    .dot {
+      width: 6px; height: 6px;
+      background: currentColor; border-radius: 50%;
+      position: relative;
     }
-
-    .input-field {
-      width: 100%;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: var(--on-surface);
-      font-family: 'Inter', sans-serif;
-      font-size: 16px;
-      line-height: 1.6;
-      resize: none;
+    .dot.pulse::after {
+      content: '';
+      position: absolute; top: -3px; left: -3px;
+      width: 12px; height: 12px;
+      border-radius: 50%; background: currentColor;
+      opacity: 0;
+      animation: ping 2s cubic-bezier(0,0,0.2,1) infinite;
     }
+    @keyframes ping { 75%,100% { transform: scale(2); opacity: 0; } }
 
-    .input-field::placeholder { color: rgba(229, 226, 225, 0.4); }
-
-    .input-actions {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 12px;
-      gap: 8px;
+    /* ── Metrics bar ────────────────────────────────── */
+    .metrics-bar {
+      display: flex; gap: 1px;
+      background: rgba(255,255,255,0.04);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
     }
-
-    .btn-primary {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 20px;
-      background: var(--primary-container);
-      color: var(--on-primary);
-      border: none;
-      border-radius: 9999px;
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
+    .metric {
+      flex: 1;
+      padding: 10px 0;
+      text-align: center;
     }
-
-    .btn-primary:hover {
-      box-shadow: 0 0 20px rgba(0, 191, 255, 0.3);
-      transform: translateY(-1px);
-    }
-
-    .btn-primary:active { transform: translateY(0); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
-    .btn-primary .material-icons { font-size: 18px; }
-
-    /* ── Suggestions ──────────────────────────────────────────── */
-    .section-label {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--on-surface-variant);
-      margin-bottom: 4px;
-    }
-
-    .suggestion-cards {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .suggestion-card {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
-      background: rgba(28, 27, 27, 0.8);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .suggestion-card:hover {
-      border-color: rgba(0, 191, 255, 0.4);
-      background: rgba(32, 31, 31, 0.9);
-      transform: translateX(4px);
-    }
-
-    .suggestion-icon {
-      width: 36px; height: 36px;
-      display: flex; align-items: center; justify-content: center;
-      background: rgba(143, 214, 255, 0.1);
-      border-radius: 10px;
+    .metric-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px; font-weight: 600;
       color: var(--primary);
     }
-    .suggestion-icon .material-icons { font-size: 20px; }
-
-    .suggestion-text { font-size: 14px; font-weight: 500; color: var(--on-surface); }
-
-    .suggestion-arrow {
-      margin-left: auto;
+    .metric-value.green { color: var(--secondary); }
+    .metric-label {
+      font-size: 9px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
       color: var(--outline);
-      opacity: 0;
-      transition: opacity 0.2s ease;
-    }
-    .suggestion-card:hover .suggestion-arrow { opacity: 1; }
-
-    /* ── Workflow ──────────────────────────────────────────────── */
-    .workflow-section {
-      background: rgba(28, 27, 27, 0.6);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 12px;
-      padding: 16px;
+      margin-top: 2px;
     }
 
-    .workflow-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
+    /* ── Main ───────────────────────────────────────── */
+    .main { flex: 1; padding: 16px 20px; display: flex; flex-direction: column; gap: 16px; }
+
+    /* ── Input ──────────────────────────────────────── */
+    .input-box {
+      background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; padding: 14px;
+      transition: all 0.3s ease;
     }
+    .input-box:focus-within { border-color: rgba(0,191,255,0.5); box-shadow: 0 0 15px rgba(0,191,255,0.1); }
+    .input-field {
+      width: 100%; background: transparent; border: none; outline: none;
+      color: var(--on-surface); font-family: 'Inter',sans-serif;
+      font-size: 15px; line-height: 1.5; resize: none;
+    }
+    .input-field::placeholder { color: rgba(229,226,225,0.35); }
+    .input-actions { display: flex; justify-content: flex-end; margin-top: 10px; }
 
-    .workflow-list { display: flex; flex-direction: column; gap: 10px; }
+    .btn-start {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 20px;
+      background: var(--primary-container); color: var(--on-primary);
+      border: none; border-radius: 9999px;
+      font-family: 'Inter',sans-serif; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s ease;
+    }
+    .btn-start:hover { box-shadow: 0 0 20px rgba(0,191,255,0.3); transform: translateY(-1px); }
+    .btn-start:active { transform: translateY(0); }
+    .btn-start:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-start .material-icons { font-size: 18px; }
 
-    .workflow-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    /* ── Suggestions ────────────────────────────────── */
+    .section-label {
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--on-surface-variant); margin-bottom: 6px;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 14px;
+      background: rgba(28,27,27,0.8);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      font-size: 13px; font-weight: 500;
+      color: var(--on-surface);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .chip:hover { border-color: rgba(0,191,255,0.4); transform: translateY(-1px); }
+    .chip .material-icons { font-size: 16px; color: var(--primary); }
+
+    /* ── Agents list (always visible) ────────────────── */
+    .agents-section {
+      background: rgba(28,27,27,0.6);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; padding: 14px;
+    }
+    .agent-row {
+      display: flex; align-items: center; gap: 10px;
       padding: 8px 0;
     }
-    .workflow-item:not(:last-child) { border-bottom: 1px solid rgba(255, 255, 255, 0.04); }
+    .agent-row:not(:last-child) { border-bottom: 1px solid rgba(255,255,255,0.04); }
 
-    .workflow-status {
-      width: 20px; height: 20px;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
+    .agent-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
     }
-    .workflow-status .material-icons { font-size: 16px; }
-    .workflow-status.completed { color: var(--secondary); }
-    .workflow-status.active { color: var(--primary); position: relative; }
-    .workflow-status.active::after {
-      content: '';
-      position: absolute;
-      width: 20px; height: 20px;
-      border-radius: 50%;
-      background: var(--primary);
-      opacity: 0;
-      animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
-    }
-    .workflow-status.pending { color: var(--outline); }
+    .agent-dot.active  { background: var(--secondary); box-shadow: 0 0 8px rgba(17,255,160,0.5); }
+    .agent-dot.idle    { background: var(--outline); }
+    .agent-dot.running { background: var(--primary); box-shadow: 0 0 8px rgba(0,191,255,0.5); animation: blink 1.5s infinite; }
 
-    .workflow-info { flex: 1; min-width: 0; }
-    .workflow-name {
-      font-size: 13px; font-weight: 500; color: var(--on-surface);
-      display: flex; align-items: center; gap: 6px;
-    }
-    .workflow-action {
-      font-size: 12px; color: var(--on-surface-variant);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
 
-    .workflow-tag {
-      font-size: 10px; font-weight: 600;
-      padding: 2px 6px; border-radius: 4px;
-      letter-spacing: 0.05em;
+    .agent-info { flex: 1; min-width: 0; }
+    .agent-name { font-size: 13px; font-weight: 500; }
+    .agent-type { font-size: 11px; color: var(--outline); }
+    .agent-status-tag {
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 2px 8px; border-radius: 4px;
     }
-    .workflow-tag.completed { background: rgba(17, 255, 160, 0.15); color: var(--secondary); }
-    .workflow-tag.active    { background: rgba(0, 191, 255, 0.15); color: var(--primary); }
-    .workflow-tag.pending   { background: rgba(135, 146, 155, 0.15); color: var(--outline); }
+    .agent-status-tag.active  { background: rgba(17,255,160,0.15); color: var(--secondary); }
+    .agent-status-tag.idle    { background: rgba(135,146,155,0.15); color: var(--outline); }
+    .agent-status-tag.running { background: rgba(0,191,255,0.15); color: var(--primary); }
 
-    /* ── Logs ─────────────────────────────────────────────────── */
+    /* ── Logs ───────────────────────────────────────── */
     .logs-section {
-      background: rgba(0, 0, 0, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 12px;
-      overflow: hidden;
+      background: rgba(0,0,0,0.8);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px; overflow: hidden;
     }
     .logs-header {
       display: flex; align-items: center; gap: 8px;
-      padding: 10px 16px;
-      background: rgba(255, 255, 255, 0.03);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
     }
     .logs-header .material-icons { font-size: 14px; color: var(--primary); }
     .logs-title {
-      font-size: 11px; font-weight: 700;
-      letter-spacing: 0.08em; text-transform: uppercase;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
       color: var(--on-surface-variant);
     }
-    .logs-auto-scroll {
+    .logs-count {
       margin-left: auto;
-      font-size: 11px;
-      color: var(--outline);
-      cursor: pointer;
-    }
-    .logs-auto-scroll:hover { color: var(--on-surface-variant); }
-
-    .logs-content {
-      padding: 12px 16px;
-      max-height: 160px;
-      overflow-y: auto;
+      font-size: 10px; color: var(--outline);
       font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      line-height: 1.5;
     }
-    .logs-content::-webkit-scrollbar { width: 4px; }
-    .logs-content::-webkit-scrollbar-track { background: transparent; }
-    .logs-content::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
+    .logs-body {
+      padding: 10px 14px;
+      max-height: 150px; overflow-y: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; line-height: 1.6;
+    }
+    .logs-body::-webkit-scrollbar { width: 4px; }
+    .logs-body::-webkit-scrollbar-track { background: transparent; }
+    .logs-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
 
-    .log-entry {
+    .log-line {
       display: flex; align-items: flex-start; gap: 8px;
-      margin-bottom: 8px;
-      opacity: 0;
-      animation: fadeIn 0.3s ease forwards;
+      margin-bottom: 6px;
+      opacity: 0; animation: fadeIn 0.3s ease forwards;
     }
-    .log-entry:last-child { margin-bottom: 0; }
-
+    .log-line:last-child { margin-bottom: 0; }
     @keyframes fadeIn { to { opacity: 1; } }
-
-    .log-timestamp { color: rgba(255, 255, 255, 0.3); white-space: nowrap; flex-shrink: 0; }
-    .log-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+    .log-ts { color: rgba(255,255,255,0.25); white-space: nowrap; flex-shrink: 0; }
+    .log-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
     .log-dot.info    { background: var(--primary); }
     .log-dot.success { background: var(--secondary); }
     .log-dot.error   { background: var(--error); }
-    .log-message { color: rgba(229, 226, 225, 0.7); word-break: break-word; }
+    .log-dot.warning { background: var(--tertiary); }
+    .log-msg { color: rgba(229,226,225,0.65); word-break: break-word; }
 
-    /* ── Bottom Controls ──────────────────────────────────────── */
-    .bottom-controls {
+    .logs-empty {
+      padding: 20px; text-align: center;
+      font-size: 12px; color: var(--outline);
+    }
+
+    /* ── Footer ─────────────────────────────────────── */
+    .footer {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 20px;
-      background: rgba(19, 19, 19, 0.85);
+      padding: 12px 20px;
+      background: rgba(19,19,19,0.85);
       backdrop-filter: blur(20px);
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      border-top: 1px solid rgba(255,255,255,0.08);
       position: sticky; bottom: 0;
     }
-    .control-buttons { display: flex; gap: 8px; }
-
-    .btn-ghost {
-      display: flex; align-items: center; gap: 6px;
-      padding: 8px 16px;
-      background: transparent;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 9999px;
-      color: var(--on-surface);
-      font-family: 'Inter', sans-serif;
-      font-size: 13px; font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .btn-ghost:hover { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.3); }
-    .btn-ghost.abort:hover { border-color: rgba(255, 180, 171, 0.5); color: var(--error); }
-    .btn-ghost .material-icons { font-size: 16px; }
-
-    .shortcut-hint {
+    .footer-left { display: flex; align-items: center; gap: 6px; }
+    .footer-status {
       font-size: 11px; color: var(--outline);
       display: flex; align-items: center; gap: 4px;
     }
-    .kbd {
-      display: inline-flex; align-items: center; justify-content: center;
-      padding: 2px 6px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 4px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px; color: var(--on-surface-variant);
-    }
+    .footer-status .material-icons { font-size: 14px; }
+    .footer-status.ok  { color: var(--secondary); }
+    .footer-status.err { color: var(--error); }
 
-    /* ── Status bar ───────────────────────────────────────────── */
-    .status-message {
-      text-align: center; padding: 8px;
-      font-size: 12px; color: var(--secondary);
-      letter-spacing: 0.02em;
-    }
-    .status-message .material-icons { font-size: 14px; vertical-align: middle; margin-right: 4px; }
+    .footer-right { display: flex; align-items: center; gap: 8px; }
 
-    .logo-svg { width: 32px; height: 32px; }
-
-    @keyframes breathe {
-      0%, 100% { opacity: 0.6; }
-      50%      { opacity: 1; }
-    }
-    .breathing { animation: breathe 2s ease-in-out infinite; }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .spinning { animation: spin 1s linear infinite; }
-
-    /* ── Settings gear ────────────────────────────────────────── */
-    .settings-gear {
+    .btn-icon {
       background: none; border: none; cursor: pointer;
       color: var(--outline); padding: 4px;
       display: flex; align-items: center; justify-content: center;
-      border-radius: 6px;
-      transition: all 0.2s ease;
+      border-radius: 6px; transition: all 0.2s ease;
     }
-    .settings-gear:hover { color: var(--on-surface); background: rgba(255,255,255,0.06); }
-    .settings-gear .material-icons { font-size: 18px; }
+    .btn-icon:hover { color: var(--on-surface); background: rgba(255,255,255,0.06); }
+    .btn-icon .material-icons { font-size: 18px; }
+
+    .btn-sm {
+      display: flex; align-items: center; gap: 4px;
+      padding: 6px 12px;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 9999px;
+      color: var(--on-surface);
+      font-family: 'Inter',sans-serif; font-size: 11px; font-weight: 500;
+      cursor: pointer; transition: all 0.2s ease;
+    }
+    .btn-sm:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.25); }
+    .btn-sm.danger:hover { border-color: rgba(255,180,171,0.5); color: var(--error); }
+    .btn-sm .material-icons { font-size: 14px; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinning { animation: spin 1s linear infinite; }
+    @keyframes breathe { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }
+    .breathing { animation: breathe 2s ease-in-out infinite; }
   </style>
 </head>
 
 <body>
-  <div class="extension-container">
+  <div class="ext">
 
-    <!-- ── Header ──────────────────────────────────────────── -->
+    <!-- Header -->
     <header class="header">
       <div class="header-left">
-        <div class="logo">
-          <svg class="logo-svg" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="2" y="2" width="36" height="36" rx="8" stroke="url(#gradient1)" stroke-width="2" fill="none" />
-            <path d="M20 10L28 26H12L20 10Z" stroke="var(--primary-container)" stroke-width="1.5" fill="none" />
-            <circle cx="20" cy="20" r="2" fill="var(--primary)" />
-            <defs>
-              <linearGradient id="gradient1" x1="0" y1="0" x2="40" y2="40">
-                <stop offset="0%" stop-color="var(--secondary)" />
-                <stop offset="100%" stop-color="var(--primary-container)" />
-              </linearGradient>
-            </defs>
-          </svg>
-        </div>
-        <span class="brand-name">AMABA</span>
+        <svg class="logo-svg" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="36" height="36" rx="8" stroke="url(#g)" stroke-width="2" fill="none"/>
+          <path d="M20 10L28 26H12L20 10Z" stroke="var(--primary-container)" stroke-width="1.5" fill="none"/>
+          <circle cx="20" cy="20" r="2" fill="var(--primary)"/>
+          <defs><linearGradient id="g" x1="0" y1="0" x2="40" y2="40">
+            <stop offset="0%" stop-color="var(--secondary)"/>
+            <stop offset="100%" stop-color="var(--primary-container)"/>
+          </linearGradient></defs>
+        </svg>
+        <span class="brand">AMABA</span>
       </div>
-      <div id="status-badge" class="status-badge">
-        <span id="status-dot" class="status-dot active"></span>
-        <span id="status-text">READY</span>
+      <div id="badge" class="badge ready">
+        <span id="badge-dot" class="dot pulse"></span>
+        <span id="badge-text">READY</span>
       </div>
     </header>
 
-    <main class="main-content">
-
-      <!-- ═══ READY VIEW ═══════════════════════════════════ -->
-      <div id="ready-view">
-        <section class="input-section">
-          <div class="input-container">
-            <textarea id="input-field" class="input-field" rows="3"
-              placeholder="Describe your goal...&#10;Example: Find top 10 AI startup founders on LinkedIn"></textarea>
-            <div class="input-actions">
-              <button id="start-btn" class="btn-primary">
-                <span class="material-icons">auto_awesome</span>
-                Start Automation
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <section class="suggestions-section">
-          <div class="section-label">Suggested Actions</div>
-          <div class="suggestion-cards">
-            <div class="suggestion-card">
-              <div class="suggestion-icon">
-                <span class="material-icons">search</span>
-              </div>
-              <span class="suggestion-text">Research competitors</span>
-              <span class="material-icons suggestion-arrow">chevron_right</span>
-            </div>
-            <div class="suggestion-card">
-              <div class="suggestion-icon">
-                <span class="material-icons">compare_arrows</span>
-              </div>
-              <span class="suggestion-text">Compare products</span>
-              <span class="material-icons suggestion-arrow">chevron_right</span>
-            </div>
-            <div class="suggestion-card">
-              <div class="suggestion-icon">
-                <span class="material-icons">description</span>
-              </div>
-              <span class="suggestion-text">Fill form</span>
-              <span class="material-icons suggestion-arrow">chevron_right</span>
-            </div>
-          </div>
-        </section>
+    <!-- Live Metrics Bar -->
+    <div id="metrics-bar" class="metrics-bar">
+      <div class="metric">
+        <div class="metric-value green" id="m-agents">—</div>
+        <div class="metric-label">Agents</div>
       </div>
-
-      <!-- ═══ ACTIVE VIEW ══════════════════════════════════ -->
-      <div id="active-view" class="hidden">
-
-        <section class="workflow-section">
-          <div class="workflow-header">
-            <div class="section-label">Active Workflow</div>
-          </div>
-          <div id="workflow-list" class="workflow-list">
-            <!-- Dynamically populated by popup.js -->
-          </div>
-        </section>
-
-        <section class="logs-section">
-          <div class="logs-header">
-            <span class="material-icons">terminal</span>
-            <span class="logs-title">Live Logs</span>
-            <span class="logs-auto-scroll">Auto-scroll</span>
-          </div>
-          <div class="logs-content" id="logsContainer">
-            <!-- Dynamically populated by popup.js -->
-          </div>
-        </section>
-
+      <div class="metric">
+        <div class="metric-value" id="m-tasks">—</div>
+        <div class="metric-label">Tasks Done</div>
       </div>
+      <div class="metric">
+        <div class="metric-value" id="m-latency">—</div>
+        <div class="metric-label">Latency</div>
+      </div>
+      <div class="metric">
+        <div class="metric-value green" id="m-reliability">—</div>
+        <div class="metric-label">Uptime</div>
+      </div>
+    </div>
+
+    <main class="main">
+
+      <!-- Input -->
+      <section>
+        <div class="input-box">
+          <textarea id="input-field" class="input-field" rows="2"
+            placeholder="What should AMABA do?"></textarea>
+          <div class="input-actions">
+            <button id="start-btn" class="btn-start">
+              <span class="material-icons">play_arrow</span>
+              Start Automation
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Suggestions -->
+      <section>
+        <div class="section-label">Suggested Actions</div>
+        <div class="chips">
+          <div class="chip" data-text="Research competitors">
+            <span class="material-icons">search</span> Research competitors
+          </div>
+          <div class="chip" data-text="Compare products">
+            <span class="material-icons">compare_arrows</span> Compare products
+          </div>
+          <div class="chip" data-text="Fill form">
+            <span class="material-icons">description</span> Fill form
+          </div>
+        </div>
+      </section>
+
+      <!-- Agents (live from backend) -->
+      <section>
+        <div class="section-label">Agents</div>
+        <div class="agents-section" id="agents-list">
+          <div class="logs-empty">Connecting to backend...</div>
+        </div>
+      </section>
+
+      <!-- Live Logs -->
+      <section class="logs-section">
+        <div class="logs-header">
+          <span class="material-icons">terminal</span>
+          <span class="logs-title">Live Logs</span>
+          <span class="logs-count" id="logs-count">0 entries</span>
+        </div>
+        <div class="logs-body" id="logs-body">
+          <div class="logs-empty">Fetching logs...</div>
+        </div>
+      </section>
 
     </main>
 
-    <!-- ── Bottom Controls ─────────────────────────────────── -->
-    <footer class="bottom-controls">
-      <div class="control-buttons">
-        <button id="pause-btn" class="btn-ghost">
-          <span class="material-icons">pause</span>
-          Pause
-        </button>
-        <button id="abort-btn" class="btn-ghost abort">
-          <span class="material-icons">stop</span>
-          Abort
-        </button>
-      </div>
-      <div style="display:flex;align-items:center;gap:12px;">
-        <div class="shortcut-hint">
-          <span class="kbd">Ctrl</span>
-          <span class="kbd">Enter</span>
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-left">
+        <div class="footer-status" id="conn-status">
+          <span class="material-icons breathing">cloud_off</span>
+          <span id="conn-text">Connecting...</span>
         </div>
-        <button id="settings-btn" class="settings-gear" title="Settings">
+      </div>
+      <div class="footer-right">
+        <button class="btn-sm" id="pause-btn">
+          <span class="material-icons">pause</span> Pause
+        </button>
+        <button class="btn-sm danger" id="abort-btn">
+          <span class="material-icons">stop</span> Abort
+        </button>
+        <button class="btn-icon" id="refresh-btn" title="Refresh">
+          <span class="material-icons">refresh</span>
+        </button>
+        <button class="btn-icon" id="settings-btn" title="Settings">
           <span class="material-icons">settings</span>
         </button>
       </div>
     </footer>
 
-    <div id="status-message" class="status-message">
-      <span class="material-icons breathing">smart_toy</span>
-      Agent ready to work
-    </div>
   </div>
-
   <script src="popup.js"></script>
 </body>
-
 </html>
