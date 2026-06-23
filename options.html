@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AMABA — Settings</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;450&display=swap"
+    rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --surface: #131313;
+      --surface-container-low: #1c1b1b;
+      --surface-container: #201f1f;
+      --surface-container-high: #2a2a2a;
+      --surface-container-highest: #353534;
+      --on-surface: #e5e2e1;
+      --on-surface-variant: #bcc8d1;
+      --outline: #87929b;
+      --outline-variant: #3d4850;
+      --primary: #8fd6ff;
+      --on-primary: #003549;
+      --primary-container: #00bfff;
+      --secondary: #11ffa0;
+      --on-secondary: #00391f;
+      --tertiary: #ffc452;
+      --error: #ffb4ab;
+      --background: #0a0a0a;
+    }
+
+    body {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0;
+      background: var(--background);
+      color: var(--on-surface);
+      font-family: 'Inter', -apple-system, sans-serif;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 20px 20px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .options-container { position: relative; z-index: 1; }
+
+    /* ── Header ────────────────────────────────────── */
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px;
+      background: rgba(19, 19, 19, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .logo-svg { width: 28px; height: 28px; }
+    .brand-name {
+      font-size: 18px; font-weight: 600; letter-spacing: -0.02em;
+      color: var(--on-surface);
+    }
+    .status-badge {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 10px;
+      background: rgba(0, 191, 255, 0.12);
+      border: 1px solid rgba(0, 191, 255, 0.3);
+      border-radius: 9999px;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--primary);
+    }
+
+    /* ── Page Title ────────────────────────────────── */
+    .page-header {
+      padding: 24px 20px 16px;
+    }
+    .page-title {
+      font-size: 28px; font-weight: 300;
+      color: rgba(229,226,225,0.4);
+      letter-spacing: -0.02em;
+    }
+    .page-subtitle {
+      font-size: 13px; color: var(--outline);
+      margin-top: 6px; line-height: 1.5;
+    }
+
+    /* ── Settings Sections ─────────────────────────── */
+    .settings-body { padding: 0 20px 120px; display: flex; flex-direction: column; gap: 16px; }
+
+    .settings-card {
+      background: var(--surface-container);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      padding: 20px;
+      transition: border-color 0.2s ease;
+    }
+    .settings-card:hover { border-color: rgba(255,255,255,0.12); }
+
+    .card-title {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 15px; font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .card-title .material-icons { font-size: 20px; color: var(--primary); }
+
+    /* ── Radio cards ───────────────────────────────── */
+    .radio-group { display: flex; flex-direction: column; gap: 10px; }
+
+    .radio-card {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 14px 16px;
+      background: var(--surface-container-high);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .radio-card:hover { border-color: rgba(0, 191, 255, 0.3); }
+    .radio-card.selected {
+      border-color: var(--primary-container);
+      background: rgba(0, 191, 255, 0.06);
+    }
+
+    .radio-circle {
+      width: 18px; height: 18px; flex-shrink: 0;
+      border: 2px solid var(--outline);
+      border-radius: 50%;
+      margin-top: 2px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s ease;
+    }
+    .radio-card.selected .radio-circle {
+      border-color: var(--primary-container);
+    }
+    .radio-circle::after {
+      content: '';
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--primary-container);
+      transform: scale(0);
+      transition: transform 0.15s ease;
+    }
+    .radio-card.selected .radio-circle::after { transform: scale(1); }
+
+    .radio-label { font-size: 14px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+    .radio-desc  { font-size: 12px; color: var(--on-surface-variant); margin-top: 2px; line-height: 1.4; }
+
+    /* ── Text inputs ──────────────────────────────── */
+    .field-group { margin-bottom: 14px; }
+    .field-group:last-child { margin-bottom: 0; }
+    .field-label { font-size: 12px; color: var(--on-surface-variant); margin-bottom: 6px; font-weight: 500; }
+
+    .field-input {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--surface-container-high);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      color: var(--on-surface);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+    .field-input:focus { border-color: rgba(0, 191, 255, 0.5); }
+    .field-input::placeholder { color: var(--outline); }
+
+    /* ── Toggle switches ─────────────────────────── */
+    .toggle-row {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 16px; padding: 8px 0;
+    }
+    .toggle-row:not(:last-child) { border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .toggle-label { font-size: 13px; font-weight: 500; }
+    .toggle-desc  { font-size: 11px; color: var(--outline); margin-top: 2px; line-height: 1.4; }
+
+    .toggle-switch {
+      width: 44px; height: 24px; flex-shrink: 0;
+      background: var(--outline-variant);
+      border-radius: 12px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.25s ease;
+    }
+    .toggle-switch.on { background: var(--primary-container); }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 20px; height: 20px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.25s ease;
+    }
+    .toggle-switch.on::after { transform: translateX(20px); }
+
+    /* ── Shortcuts ─────────────────────────────────── */
+    .shortcut-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 0;
+    }
+    .shortcut-row:not(:last-child) { border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .shortcut-label { font-size: 13px; font-weight: 500; }
+    .shortcut-keys { display: flex; gap: 4px; }
+    .kbd {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 4px 8px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; color: var(--on-surface-variant);
+      min-width: 28px;
+    }
+
+    /* ── Bottom bar ────────────────────────────────── */
+    .bottom-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px;
+      max-width: 480px; margin: 0 auto;
+      background: rgba(19,19,19,0.95);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      z-index: 100;
+    }
+    .btn-reset {
+      background: none; border: none;
+      color: var(--outline); font-family: 'Inter', sans-serif;
+      font-size: 13px; cursor: pointer;
+      transition: color 0.2s ease;
+    }
+    .btn-reset:hover { color: var(--on-surface); }
+    .btn-save {
+      padding: 10px 24px;
+      background: var(--primary-container);
+      color: var(--on-primary);
+      border: none; border-radius: 9999px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px; font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-save:hover { box-shadow: 0 0 20px rgba(0,191,255,0.3); transform: translateY(-1px); }
+    .btn-save:active { transform: translateY(0); }
+
+    /* ── Toast ─────────────────────────────────────── */
+    .toast {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+      padding: 10px 20px;
+      background: var(--secondary);
+      color: var(--on-secondary);
+      border-radius: 9999px;
+      font-size: 13px; font-weight: 600;
+      z-index: 200;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+
+<body>
+  <div class="options-container">
+
+    <header class="header">
+      <div class="header-left">
+        <svg class="logo-svg" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="36" height="36" rx="8" stroke="url(#g1)" stroke-width="2" fill="none" />
+          <path d="M20 10L28 26H12L20 10Z" stroke="var(--primary-container)" stroke-width="1.5" fill="none" />
+          <circle cx="20" cy="20" r="2" fill="var(--primary)" />
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="40" y2="40">
+              <stop offset="0%" stop-color="var(--secondary)" />
+              <stop offset="100%" stop-color="var(--primary-container)" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <span class="brand-name">AMABA</span>
+      </div>
+      <div class="status-badge">SETTINGS</div>
+    </header>
+
+    <div class="page-header">
+      <h1 class="page-title">Configuration</h1>
+      <p class="page-subtitle">Manage your autonomous agent settings and operational parameters.</p>
+    </div>
+
+    <div class="settings-body">
+
+      <!-- Agent Model -->
+      <div class="settings-card">
+        <div class="card-title">
+          <span class="material-icons">psychology</span>
+          Agent Model
+        </div>
+        <div class="radio-group" id="model-group">
+          <div class="radio-card selected" data-value="gpt-4o">
+            <div class="radio-circle"></div>
+            <div>
+              <div class="radio-label">GPT-4o</div>
+              <div class="radio-desc">Balanced reasoning and speed for complex DOM navigation.</div>
+            </div>
+          </div>
+          <div class="radio-card" data-value="claude-3.5">
+            <div class="radio-circle"></div>
+            <div>
+              <div class="radio-label">Claude 3.5</div>
+              <div class="radio-desc">Superior contextual understanding for text-heavy interfaces.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- API Credentials -->
+      <div class="settings-card">
+        <div class="card-title">
+          <span class="material-icons">vpn_key</span>
+          API Credentials
+        </div>
+        <div class="field-group">
+          <div class="field-label">OpenAI API Key</div>
+          <input id="openai-key" type="password" class="field-input" placeholder="sk-...">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Anthropic API Key</div>
+          <input id="anthropic-key" type="password" class="field-input" placeholder="Enter API Key to enable Claude">
+        </div>
+      </div>
+
+      <!-- Backend URL -->
+      <div class="settings-card">
+        <div class="card-title">
+          <span class="material-icons">cloud</span>
+          Backend Connection
+        </div>
+        <div class="field-group">
+          <div class="field-label">Backend URL</div>
+          <input id="backend-url" type="url" class="field-input" value="https://amaba-backend.onrender.com"
+            placeholder="https://amaba-backend.onrender.com">
+        </div>
+        <div id="connection-status" style="margin-top:8px;font-size:12px;color:var(--outline);">
+          Checking connection...
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="settings-card">
+        <div class="card-title">
+          <span class="material-icons">tune</span>
+          System
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Developer Mode</div>
+            <div class="toggle-desc">Expose internal DOM states and action logs.</div>
+          </div>
+          <div id="toggle-dev" class="toggle-switch on"></div>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Auto-Execute</div>
+            <div class="toggle-desc">Run inferred actions without confirmation.</div>
+          </div>
+          <div id="toggle-auto" class="toggle-switch"></div>
+        </div>
+      </div>
+
+      <!-- Shortcuts -->
+      <div class="settings-card">
+        <div class="card-title">
+          <span class="material-icons">keyboard</span>
+          Shortcuts
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-label">Invoke Agent</span>
+          <div class="shortcut-keys">
+            <span class="kbd">Ctrl</span>
+            <span class="kbd">K</span>
+          </div>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-label">Abort Action</span>
+          <div class="shortcut-keys">
+            <span class="kbd">ESC</span>
+          </div>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-label">Toggle Overlay</span>
+          <div class="shortcut-keys">
+            <span class="kbd">Ctrl</span>
+            <span class="kbd">Shift</span>
+            <span class="kbd">O</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="bottom-bar">
+      <button id="reset-btn" class="btn-reset">Reset</button>
+      <button id="save-btn" class="btn-save">Save Changes</button>
+    </div>
+
+    <div id="toast" class="toast">Settings saved ✓</div>
+
+  </div>
+
+  <script src="options.js"></script>
+</body>
+
+</html>

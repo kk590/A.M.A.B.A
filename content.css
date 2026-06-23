@@ -1,0 +1,5 @@
+/* AMABA Content Script Styles — injected via manifest content_scripts.css */
+
+/* This file is intentionally minimal. The content script creates its
+   own scoped styles dynamically. This CSS exists because the manifest
+   references it and Chrome will error if the file is missing. */
