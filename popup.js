@@ -139,11 +139,14 @@ document.addEventListener('DOMContentLoaded', () => {
   pauseBtn?.addEventListener('click', async () => {
     addLogEntry('info', 'Pausing agents...');
     // Stop all active agents
-    const agents = await sendMsg({ type: 'GET_AGENTS' });
-    if (agents.success && Array.isArray(agents.data)) {
-      for (const agent of agents.data) {
-        if (agent.status === 'running' || agent.status === 'active') {
-          await sendMsg({ type: 'STOP_AGENT', agentId: agent.id || agent.agent_id });
+    const res = await sendMsg({ type: 'GET_AGENTS' });
+    if (res.success && res.data) {
+      const agents = res.data.agents || res.data || [];
+      if (Array.isArray(agents)) {
+        for (const agent of agents) {
+          if (agent.status === 'running' || agent.status === 'active') {
+            await sendMsg({ type: 'STOP_AGENT', agentId: agent.id || agent.agent_id });
+          }
         }
       }
     }
@@ -154,10 +157,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   abortBtn?.addEventListener('click', async () => {
     addLogEntry('error', 'Aborting all tasks...');
-    const agents = await sendMsg({ type: 'GET_AGENTS' });
-    if (agents.success && Array.isArray(agents.data)) {
-      for (const agent of agents.data) {
-        await sendMsg({ type: 'STOP_AGENT', agentId: agent.id || agent.agent_id });
+    const res = await sendMsg({ type: 'GET_AGENTS' });
+    if (res.success && res.data) {
+      const agents = res.data.agents || res.data || [];
+      if (Array.isArray(agents)) {
+        for (const agent of agents) {
+          await sendMsg({ type: 'STOP_AGENT', agentId: agent.id || agent.agent_id });
+        }
       }
     }
     addLogEntry('info', 'All tasks aborted');
@@ -172,10 +178,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // -----------------------------------------------------------------------
   async function refreshWorkflow() {
     const res = await sendMsg({ type: 'GET_AGENTS' });
-    if (!res.success || !Array.isArray(res.data)) return;
+    if (!res.success || !res.data) return;
+
+    // Backend returns { agents: [...] }, unwrap it
+    const agents = res.data.agents || res.data || [];
+    if (!Array.isArray(agents) || agents.length === 0) return;
 
     workflowList.innerHTML = '';
-    res.data.forEach((agent) => {
+    agents.forEach((agent) => {
       const status = (agent.status || 'idle').toLowerCase();
       let statusClass, iconName, tagText;
 
