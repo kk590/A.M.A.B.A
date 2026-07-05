@@ -1,95 +1,214 @@
 /**
  * AMABA Popup Script
- * Connects the popup UI to the backend via background.js messaging.
+ * Connects directly to the FastAPI backend and renders live data.
  *
- * Views:
- *   #ready-view   — idle state (input + suggestions)
- *   #active-view  — running state (workflow + logs + controls)
+ * Backend: https://amaba-backend.onrender.com
  */
+
+const API = 'https://amaba-backend.onrender.com';
 
 document.addEventListener('DOMContentLoaded', () => {
   // -----------------------------------------------------------------------
-  // DOM refs
+  // DOM
   // -----------------------------------------------------------------------
-  const readyView       = document.getElementById('ready-view');
-  const activeView      = document.getElementById('active-view');
-  const statusBadge     = document.getElementById('status-badge');
-  const statusDot       = document.getElementById('status-dot');
-  const statusText      = document.getElementById('status-text');
-  const inputField      = document.getElementById('input-field');
-  const startBtn        = document.getElementById('start-btn');
-  const pauseBtn        = document.getElementById('pause-btn');
-  const abortBtn        = document.getElementById('abort-btn');
-  const logsContainer   = document.getElementById('logsContainer');
-  const workflowList    = document.getElementById('workflow-list');
-  const settingsBtn     = document.getElementById('settings-btn');
-  const suggestionCards = document.querySelectorAll('.suggestion-card');
+  const badge       = document.getElementById('badge');
+  const badgeDot    = document.getElementById('badge-dot');
+  const badgeText   = document.getElementById('badge-text');
+  const mAgents     = document.getElementById('m-agents');
+  const mTasks      = document.getElementById('m-tasks');
+  const mLatency    = document.getElementById('m-latency');
+  const mReliability= document.getElementById('m-reliability');
+  const agentsList  = document.getElementById('agents-list');
+  const logsBody    = document.getElementById('logs-body');
+  const logsCount   = document.getElementById('logs-count');
+  const inputField  = document.getElementById('input-field');
+  const startBtn    = document.getElementById('start-btn');
+  const pauseBtn    = document.getElementById('pause-btn');
+  const abortBtn    = document.getElementById('abort-btn');
+  const refreshBtn  = document.getElementById('refresh-btn');
+  const settingsBtn = document.getElementById('settings-btn');
+  const connStatus  = document.getElementById('conn-status');
+  const connText    = document.getElementById('conn-text');
+  const chips       = document.querySelectorAll('.chip');
 
-  let currentTaskId     = null;
-  let logPollTimer      = null;
-  let workflowPollTimer = null;
+  let pollTimer = null;
 
   // -----------------------------------------------------------------------
-  // Messaging helper
+  // Fetch helpers (direct fetch, no background.js dependency)
   // -----------------------------------------------------------------------
-  function sendMsg(msg) {
-    return new Promise((resolve) => {
-      chrome.runtime.sendMessage(msg, (response) => {
-        if (chrome.runtime.lastError) {
-          resolve({ success: false, error: chrome.runtime.lastError.message });
-        } else {
-          resolve(response || { success: false, error: 'No response' });
-        }
-      });
+  async function apiGet(endpoint) {
+    const res = await fetch(`${API}${endpoint}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }
+
+  async function apiPost(endpoint, body) {
+    const res = await fetch(`${API}${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
     });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
   }
 
   // -----------------------------------------------------------------------
-  // View toggling
+  // Set connection status
   // -----------------------------------------------------------------------
-  function showReadyView() {
-    readyView.classList.remove('hidden');
-    activeView.classList.add('hidden');
-    setStatus('ready');
-    stopLivePolling();
-  }
-
-  function showActiveView() {
-    readyView.classList.add('hidden');
-    activeView.classList.remove('hidden');
-    setStatus('active');
-    startLivePolling();
-  }
-
-  function setStatus(state) {
-    if (state === 'active') {
-      statusBadge.className = 'status-badge active';
-      statusDot.className = 'status-dot active';
-      statusText.textContent = 'ACTIVE';
-    } else if (state === 'error') {
-      statusBadge.className = 'status-badge error';
-      statusDot.className = 'status-dot';
-      statusText.textContent = 'OFFLINE';
+  function setConnected(online) {
+    if (online) {
+      connStatus.className = 'footer-status ok';
+      connStatus.querySelector('.material-icons').textContent = 'cloud_done';
+      connText.textContent = 'Backend online';
+      badge.className = 'badge ready';
+      badgeDot.className = 'dot pulse';
+      badgeText.textContent = 'READY';
     } else {
-      statusBadge.className = 'status-badge';
-      statusDot.className = 'status-dot active';
-      statusText.textContent = 'READY';
+      connStatus.className = 'footer-status err';
+      connStatus.querySelector('.material-icons').textContent = 'cloud_off';
+      connText.textContent = 'Backend offline';
+      badge.className = 'badge off';
+      badgeDot.className = 'dot';
+      badgeText.textContent = 'OFFLINE';
     }
   }
 
   // -----------------------------------------------------------------------
-  // Backend connectivity check
+  // Fetch & render: Health
   // -----------------------------------------------------------------------
-  async function checkBackend() {
-    const res = await sendMsg({ type: 'GET_HEALTH' });
-    if (!res.success) {
-      setStatus('error');
-      updateStatusMessage('Backend offline', 'error');
-    } else {
-      setStatus('ready');
-      updateStatusMessage('Agent ready to work', 'ok');
+  async function fetchHealth() {
+    try {
+      const data = await apiGet('/health');
+      setConnected(true);
+      return data;
+    } catch {
+      setConnected(false);
+      return null;
     }
-    return res.success;
+  }
+
+  // -----------------------------------------------------------------------
+  // Fetch & render: Metrics
+  // -----------------------------------------------------------------------
+  async function fetchMetrics() {
+    try {
+      const status = await apiGet('/api/status');
+      // status = { status, uptime, agents_active, tasks_running, orchestration_ready, metrics: {...} }
+      mAgents.textContent = status.agents_active ?? '—';
+      mTasks.textContent  = status.metrics?.tasks_completed ?? '—';
+      mLatency.textContent = status.metrics?.latency ? `${status.metrics.latency}ms` : '—';
+      mReliability.textContent = status.metrics?.reliability ? `${status.metrics.reliability}%` : '—';
+
+      // Update badge if orchestration is active
+      if (status.tasks_running > 0) {
+        badge.className = 'badge active';
+        badgeText.textContent = 'ACTIVE';
+      }
+    } catch {
+      mAgents.textContent = '—';
+      mTasks.textContent = '—';
+      mLatency.textContent = '—';
+      mReliability.textContent = '—';
+    }
+  }
+
+  // -----------------------------------------------------------------------
+  // Fetch & render: Agents
+  // -----------------------------------------------------------------------
+  async function fetchAgents() {
+    try {
+      const data = await apiGet('/api/agents');
+      // data = { agents: [ { id, name, status, progress, last_updated, type }, ... ] }
+      const agents = data.agents || [];
+
+      if (agents.length === 0) {
+        agentsList.innerHTML = '<div class="logs-empty">No agents registered</div>';
+        return;
+      }
+
+      agentsList.innerHTML = '';
+      agents.forEach((agent) => {
+        const s = (agent.status || 'idle').toLowerCase();
+        const dotClass = s === 'active' ? 'active' : s === 'running' ? 'running' : 'idle';
+        const tagClass = dotClass;
+
+        const row = document.createElement('div');
+        row.className = 'agent-row';
+        row.innerHTML = `
+          <div class="agent-dot ${dotClass}"></div>
+          <div class="agent-info">
+            <div class="agent-name">${agent.name || agent.id}</div>
+            <div class="agent-type">${agent.type || agent.id}</div>
+          </div>
+          <span class="agent-status-tag ${tagClass}">${s.toUpperCase()}</span>
+        `;
+        agentsList.appendChild(row);
+      });
+    } catch (err) {
+      agentsList.innerHTML = `<div class="logs-empty" style="color:var(--error)">Failed to load agents: ${err.message}</div>`;
+    }
+  }
+
+  // -----------------------------------------------------------------------
+  // Fetch & render: Logs
+  // -----------------------------------------------------------------------
+  async function fetchLogs() {
+    try {
+      const data = await apiGet('/api/logs?limit=20');
+      // data = { logs: [ { timestamp, message, level }, ... ], total }
+      const logs = data.logs || [];
+      logsCount.textContent = `${data.total || logs.length} entries`;
+
+      if (logs.length === 0) {
+        logsBody.innerHTML = '<div class="logs-empty">No logs yet</div>';
+        return;
+      }
+
+      logsBody.innerHTML = '';
+      logs.forEach((log, i) => {
+        const level = (log.level || 'info').toLowerCase();
+        const dotClass = level === 'error' ? 'error' : level === 'warning' ? 'warning' : level === 'success' ? 'success' : 'info';
+
+        const line = document.createElement('div');
+        line.className = 'log-line';
+        line.style.animationDelay = `${i * 0.05}s`;
+        line.innerHTML = `
+          <span class="log-ts">${log.timestamp || '--:--'}</span>
+          <span class="log-dot ${dotClass}"></span>
+          <span class="log-msg">${log.message || ''}</span>
+        `;
+        logsBody.appendChild(line);
+      });
+      logsBody.scrollTop = logsBody.scrollHeight;
+    } catch (err) {
+      logsBody.innerHTML = `<div class="logs-empty" style="color:var(--error)">Failed: ${err.message}</div>`;
+    }
+  }
+
+  // -----------------------------------------------------------------------
+  // Refresh all data
+  // -----------------------------------------------------------------------
+  async function refreshAll() {
+    // Spin the refresh icon
+    const icon = refreshBtn.querySelector('.material-icons');
+    icon.classList.add('spinning');
+
+    await fetchHealth();
+    await Promise.all([fetchMetrics(), fetchAgents(), fetchLogs()]);
+
+    setTimeout(() => icon.classList.remove('spinning'), 500);
+  }
+
+  // -----------------------------------------------------------------------
+  // Start polling
+  // -----------------------------------------------------------------------
+  function startPolling() {
+    stopPolling();
+    pollTimer = setInterval(refreshAll, 10000); // every 10s
+  }
+
+  function stopPolling() {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
   }
 
   // -----------------------------------------------------------------------
@@ -98,246 +217,115 @@ document.addEventListener('DOMContentLoaded', () => {
   async function startAutomation(description) {
     if (!description.trim()) return;
 
-    // Disable button, show loading
     startBtn.disabled = true;
-    startBtn.innerHTML = `
-      <span class="material-icons spinning">sync</span>
-      Starting...
-    `;
-    updateStatusMessage('Connecting to orchestrator...', 'ok');
+    startBtn.innerHTML = '<span class="material-icons spinning">sync</span> Starting...';
 
-    const res = await sendMsg({
-      type: 'RUN_ORCHESTRATION',
-      taskDescription: description.trim(),
-    });
+    try {
+      const result = await apiPost('/api/orchestrator/run', {
+        task_description: description.trim(),
+      });
 
-    if (res.success && res.data) {
-      currentTaskId = res.data.task_id || null;
-      showActiveView();
-      addLogEntry('info', `Task submitted: "${description.trim()}"`);
-      addLogEntry('success', 'CEO agent orchestrating...');
-      updateStatusMessage('CEO Orchestrating • Active', 'ok');
+      // Add local log entry
+      appendLocalLog('success', `Task submitted: "${description.trim()}"`);
+      if (result.task_id) {
+        appendLocalLog('info', `Task ID: ${result.task_id}`);
+      }
 
-      // Fetch initial agents & populate workflow
-      await refreshWorkflow();
-    } else {
-      addLogEntry('error', `Failed: ${res.error || 'Unknown error'}`);
-      updateStatusMessage('Failed to start task', 'error');
+      badge.className = 'badge active';
+      badgeText.textContent = 'ACTIVE';
+
+      // Refresh to show updated agents/logs
+      await refreshAll();
+    } catch (err) {
+      appendLocalLog('error', `Failed to start: ${err.message}`);
     }
 
-    // Re-enable
     startBtn.disabled = false;
-    startBtn.innerHTML = `
-      <span class="material-icons">auto_awesome</span>
-      Start Automation
-    `;
+    startBtn.innerHTML = '<span class="material-icons">play_arrow</span> Start Automation';
   }
 
-  // -----------------------------------------------------------------------
-  // Pause & Abort
-  // -----------------------------------------------------------------------
-  pauseBtn?.addEventListener('click', async () => {
-    addLogEntry('info', 'Pausing agents...');
-    // Stop all active agents
-    const res = await sendMsg({ type: 'GET_AGENTS' });
-    if (res.success && res.data) {
-      const agents = res.data.agents || res.data || [];
-      if (Array.isArray(agents)) {
-        for (const agent of agents) {
-          if (agent.status === 'running' || agent.status === 'active') {
-            await sendMsg({ type: 'STOP_AGENT', agentId: agent.id || agent.agent_id });
-          }
-        }
-      }
-    }
-    addLogEntry('success', 'Agents paused');
-    setStatus('ready');
-    updateStatusMessage('Automation paused', 'ok');
-  });
-
-  abortBtn?.addEventListener('click', async () => {
-    addLogEntry('error', 'Aborting all tasks...');
-    const res = await sendMsg({ type: 'GET_AGENTS' });
-    if (res.success && res.data) {
-      const agents = res.data.agents || res.data || [];
-      if (Array.isArray(agents)) {
-        for (const agent of agents) {
-          await sendMsg({ type: 'STOP_AGENT', agentId: agent.id || agent.agent_id });
-        }
-      }
-    }
-    addLogEntry('info', 'All tasks aborted');
-    currentTaskId = null;
-    stopLivePolling();
-    showReadyView();
-    updateStatusMessage('Agent ready to work', 'ok');
-  });
-
-  // -----------------------------------------------------------------------
-  // Workflow rendering
-  // -----------------------------------------------------------------------
-  async function refreshWorkflow() {
-    const res = await sendMsg({ type: 'GET_AGENTS' });
-    if (!res.success || !res.data) return;
-
-    // Backend returns { agents: [...] }, unwrap it
-    const agents = res.data.agents || res.data || [];
-    if (!Array.isArray(agents) || agents.length === 0) return;
-
-    workflowList.innerHTML = '';
-    agents.forEach((agent) => {
-      const status = (agent.status || 'idle').toLowerCase();
-      let statusClass, iconName, tagText;
-
-      if (status === 'completed' || status === 'done') {
-        statusClass = 'completed';
-        iconName = 'check_circle';
-        tagText = 'DONE';
-      } else if (status === 'running' || status === 'active') {
-        statusClass = 'active';
-        iconName = 'radio_button_checked';
-        tagText = 'ACTIVE';
-      } else {
-        statusClass = 'pending';
-        iconName = 'radio_button_unchecked';
-        tagText = 'PENDING';
-      }
-
-      const item = document.createElement('div');
-      item.className = 'workflow-item';
-      item.innerHTML = `
-        <div class="workflow-status ${statusClass}">
-          <span class="material-icons">${iconName}</span>
-        </div>
-        <div class="workflow-info">
-          <div class="workflow-name">
-            ${agent.name || agent.agent_id || 'Agent'}
-            <span class="workflow-tag ${statusClass}">${tagText}</span>
-          </div>
-          <div class="workflow-action">${agent.current_action || agent.description || 'Waiting...'}</div>
-        </div>
-      `;
-      workflowList.appendChild(item);
-    });
-  }
-
-  // -----------------------------------------------------------------------
-  // Live logs
-  // -----------------------------------------------------------------------
-  async function fetchLogs() {
-    const res = await sendMsg({ type: 'GET_LOGS', limit: 20 });
-    if (!res.success) return;
-
-    const logs = Array.isArray(res.data) ? res.data : (res.data?.logs || []);
-    logsContainer.innerHTML = '';
-
-    logs.forEach((log, i) => {
-      const ts = log.timestamp
-        ? new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-        : '--:--:--';
-      const level = (log.level || 'info').toLowerCase();
-      const dotClass = level === 'error' ? 'error' : level === 'success' ? 'success' : 'info';
-      const entry = document.createElement('div');
-      entry.className = 'log-entry';
-      entry.style.animationDelay = `${i * 0.05}s`;
-      entry.innerHTML = `
-        <span class="log-timestamp">${ts}</span>
-        <span class="log-dot ${dotClass}"></span>
-        <span class="log-message">${log.message || ''}</span>
-      `;
-      logsContainer.appendChild(entry);
-    });
-
-    logsContainer.scrollTop = logsContainer.scrollHeight;
-  }
-
-  function addLogEntry(level, message) {
-    const ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  function appendLocalLog(level, message) {
     const dotClass = level === 'error' ? 'error' : level === 'success' ? 'success' : 'info';
-    const entry = document.createElement('div');
-    entry.className = 'log-entry';
-    entry.innerHTML = `
-      <span class="log-timestamp">${ts}</span>
+    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    // Remove "empty" placeholder
+    const empty = logsBody.querySelector('.logs-empty');
+    if (empty) empty.remove();
+
+    const line = document.createElement('div');
+    line.className = 'log-line';
+    line.innerHTML = `
+      <span class="log-ts">${now}</span>
       <span class="log-dot ${dotClass}"></span>
-      <span class="log-message">${message}</span>
+      <span class="log-msg">${message}</span>
     `;
-    logsContainer.appendChild(entry);
-    logsContainer.scrollTop = logsContainer.scrollHeight;
+    logsBody.appendChild(line);
+    logsBody.scrollTop = logsBody.scrollHeight;
   }
 
   // -----------------------------------------------------------------------
-  // Live polling (while active view is shown)
+  // Pause / Abort
   // -----------------------------------------------------------------------
-  function startLivePolling() {
-    stopLivePolling();
-    fetchLogs();
-    refreshWorkflow();
-    logPollTimer = setInterval(fetchLogs, 5000);
-    workflowPollTimer = setInterval(refreshWorkflow, 8000);
-  }
+  pauseBtn.addEventListener('click', async () => {
+    try {
+      const data = await apiGet('/api/agents');
+      const agents = data.agents || [];
+      for (const agent of agents) {
+        if (agent.status === 'active' || agent.status === 'running') {
+          await apiPost(`/api/agents/${agent.id}/stop`);
+        }
+      }
+      appendLocalLog('info', 'Agents paused');
+      await refreshAll();
+    } catch (err) {
+      appendLocalLog('error', `Pause failed: ${err.message}`);
+    }
+  });
 
-  function stopLivePolling() {
-    if (logPollTimer) { clearInterval(logPollTimer); logPollTimer = null; }
-    if (workflowPollTimer) { clearInterval(workflowPollTimer); workflowPollTimer = null; }
-  }
-
-  // -----------------------------------------------------------------------
-  // Status message (bottom bar)
-  // -----------------------------------------------------------------------
-  function updateStatusMessage(text, type = 'ok') {
-    const el = document.getElementById('status-message');
-    if (!el) return;
-    const icon = type === 'error' ? 'error_outline' : 'smart_toy';
-    const cls = type === 'error' ? '' : 'breathing';
-    el.innerHTML = `<span class="material-icons ${cls}">${icon}</span> ${text}`;
-    el.style.color = type === 'error' ? 'var(--error)' : 'var(--secondary)';
-  }
+  abortBtn.addEventListener('click', async () => {
+    try {
+      const data = await apiGet('/api/agents');
+      const agents = data.agents || [];
+      for (const agent of agents) {
+        await apiPost(`/api/agents/${agent.id}/stop`);
+      }
+      appendLocalLog('error', 'All tasks aborted');
+      badge.className = 'badge ready';
+      badgeText.textContent = 'READY';
+      await refreshAll();
+    } catch (err) {
+      appendLocalLog('error', `Abort failed: ${err.message}`);
+    }
+  });
 
   // -----------------------------------------------------------------------
   // Event listeners
   // -----------------------------------------------------------------------
-  startBtn.addEventListener('click', () => {
-    startAutomation(inputField.value);
-  });
+  startBtn.addEventListener('click', () => startAutomation(inputField.value));
 
   inputField.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      startAutomation(inputField.value);
-    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') startAutomation(inputField.value);
   });
 
-  // Suggestion cards fill the input & submit
-  suggestionCards.forEach((card) => {
-    card.addEventListener('click', () => {
-      const text = card.querySelector('.suggestion-text')?.textContent || '';
+  chips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const text = chip.dataset.text || chip.textContent.trim();
       inputField.value = text;
       startAutomation(text);
     });
   });
 
-  // Settings button opens options page
-  settingsBtn?.addEventListener('click', () => {
-    if (chrome.runtime.openOptionsPage) {
+  refreshBtn.addEventListener('click', () => refreshAll());
+
+  settingsBtn.addEventListener('click', () => {
+    if (chrome?.runtime?.openOptionsPage) {
       chrome.runtime.openOptionsPage();
     }
   });
 
-  // Listen for backend status changes from background.js
-  chrome.runtime.onMessage.addListener((msg) => {
-    if (msg.type === 'BACKEND_STATUS') {
-      if (msg.online) {
-        setStatus(activeView.classList.contains('hidden') ? 'ready' : 'active');
-        updateStatusMessage('Agent ready to work', 'ok');
-      } else {
-        setStatus('error');
-        updateStatusMessage('Backend offline — retrying...', 'error');
-      }
-    }
-  });
-
   // -----------------------------------------------------------------------
-  // Init
+  // Init: fetch everything immediately
   // -----------------------------------------------------------------------
-  showReadyView();
-  checkBackend();
+  refreshAll();
+  startPolling();
 });
