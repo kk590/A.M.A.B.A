@@ -1,44 +1,75 @@
-# A.M.A.B.A
+<<<<<<< HEAD
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-**A**utonomous **M**ulti-**A**gent **B**rowser **A**utomation
+## Getting Started
 
-A Chrome/Chromium browser extension that connects to a FastAPI backend for
-AI-powered autonomous web navigation with multi-agent orchestration.
+First, run the development server:
 
-## Architecture
-
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
-popup.html / popup.js   ← User-facing popup UI (Ready ↔ Active views)
-options.html / options.js ← Settings page (model, API keys, toggles)
-background.js            ← Service worker (health polling, message routing)
-content.js               ← DOM interaction on web pages
-api.js                   ← Centralized API service layer
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+=======
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+## Getting Started
+
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-## Backend
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-Connected to: `https://amaba-backend.onrender.com`
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-### API Endpoints Used
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-| Endpoint | Method | Purpose |
-|---|---|---|
-| `/health` | GET | Health check |
-| `/api/status` | GET | System status |
-| `/api/agents` | GET | List all agents |
-| `/api/agents/{id}/start` | POST | Start an agent |
-| `/api/agents/{id}/stop` | POST | Stop an agent |
-| `/api/orchestrator/run` | POST | Run orchestration task |
-| `/api/orchestrator/status` | GET | Orchestrator status |
-| `/api/logs` | GET/POST | Execution logs |
-| `/api/tasks` | POST | Create task |
-| `/api/browser/navigate` | POST | Navigate to URL |
-| `/api/browser/scrape` | POST | Scrape page elements |
-| `/api/browser/click` | POST | Click element |
+## Learn More
 
-## Setup
+To learn more about Next.js, take a look at the following resources:
 
-1. Clone this repo and checkout `pre-develop`
-2. Open `chrome://extensions/` → enable Developer Mode
-3. Click "Load unpacked" → select this folder
-4. Open Settings (gear icon in popup) to configure API keys
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+>>>>>>> 82c0811f7c0a09c3faa3264140fc4eae6738b72c
