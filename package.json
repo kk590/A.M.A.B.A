@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "name": "amaba",
   "version": "0.1.0",
@@ -29,3 +30,36 @@
     "typescript": "5.9.3"
   }
 }
+=======
+{
+  "name": "amaba",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "npx esbuild src/background.ts --bundle --outfile=public/background.js && next build && node rename-next.mjs",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^4.0.7",
+    "ai": "^7.0.4",
+    "next": "^9.3.3",
+    "playwright": "^1.61.1",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/chrome": "^0.2.0",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "esbuild": "^0.28.1",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.9",
+    "tailwindcss": "^4",
+    "typescript": "5.9.3"
+  }
+}
+>>>>>>> 82c0811f7c0a09c3faa3264140fc4eae6738b72c
